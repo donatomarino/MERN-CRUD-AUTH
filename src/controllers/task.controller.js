@@ -6,7 +6,9 @@ import Task from '../models/task.model.js';
  * @param {*} res 
  */
 export const getTasks = async (req, res) => {
-    const tasks = await Task.find();
+    const tasks = await Task.find({
+        user: req.user.id, // El id del usuario que está autenticado
+    }).populate('user'); // Para que devuelva el objeto completo del usuario);
     res.json(tasks);
 };
 
@@ -18,10 +20,12 @@ export const getTasks = async (req, res) => {
 export const createTask = async (req, res) => {
     const { title, description, date } = req.body;
 
+    console.log(req.user);
     const newTask = new Task({
         title,
         description,
         date,
+        user: req.user.id, // El id del usuario que está autenticado
     });
 
     // Guardamos el task
@@ -51,7 +55,7 @@ export const deleteTask = async (req, res) => {
     const task = await Task.findByIdAndDelete(req.params.id);
 
     if (!task) return res.status(404).json({ nessage: 'Task not found' });
-    res.json({ message: 'Task updated' });
+    return res.sendStatus(204); // Todo ha ido bien, pero no devuelvo nada
 };
 
 /**
@@ -66,6 +70,6 @@ export const updateTask = async (req, res) => {
     });
 
     if (!task) return res.status(404).json({ nessage: 'Task not found' });
-    res.json({ message: 'Task updated' });
+    res.json(task);
 };
 
